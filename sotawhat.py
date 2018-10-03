@@ -1,6 +1,6 @@
 import re
 import sys
-import urllib
+import urllib.error
 import urllib.request
 import enchant
 from nltk.tokenize import word_tokenize
