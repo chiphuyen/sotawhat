@@ -1,10 +1,22 @@
 import re
-import sys
+import os
 import urllib.error
 import urllib.request
-import enchant
-from nltk.tokenize import word_tokenize
 from six.moves.html_parser import HTMLParser
+
+import nltk
+from nltk.tokenize import word_tokenize
+
+try:
+    import enchant
+    _ENCHANT_AVAILABLE = True
+except ImportError:
+    _ENCHANT_AVAILABLE = False
+
+try:
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    nltk.download('punkt')
 
 h = HTMLParser()
 
@@ -129,7 +141,7 @@ def has_number(sent):
             return True
         try:
             value = int(token)
-        except:
+        except Exception:
             continue
         if (not is_citation_year(tokens, i)) and (not is_list_numer(tokens, i, value)):
             return True
@@ -175,7 +187,7 @@ def extract_line(abstract, keyword, limit):
 def get_report(paper, keyword):
     if keyword in paper['abstract'].lower():
         title = h.unescape(paper['title'])
-        headline = '{} ({} - {})\n'.format(title, paper['authors'][0], paper['date'])
+        headline = '{} ({} - {})\n'.format(title, h.unescape(paper['authors'][0]), paper['date'])
         abstract = h.unescape(paper['abstract'])
         extract, has_number = extract_line(abstract, keyword, 280 - len(headline))
         if extract:
@@ -214,21 +226,28 @@ def txt2reports(txt, keyword, num_to_show):
     return unshown, num_to_show, found
 
 
-def get_papers(keyword, num_results=5):
+def get_papers(keyword, num_results=5, args=None):
     """
     If keyword is an English word, then search in CS category only to avoid papers from other categories, resulted from the ambiguity
     """
 
-    if keyword in set(['GAN', 'bpc']):
+    if keyword in {'GAN', 'bpc'}:
         query_temp = 'https://arxiv.org/search/advanced?advanced=&terms-0-operator=AND&terms-0-term={}&terms-0-field=all&classification-computer_science=y&classification-physics_archives=all&date-filter_by=all_dates&date-year=&date-from_date=&date-to_date=&date-date_type=submitted_date&abstracts=show&size={}&order=-announced_date_first&start={}'
         keyword = keyword.lower()
     else:
         keyword = keyword.lower()
-        d = enchant.Dict('en_US')
-        if d.check(keyword):
-            query_temp = 'https://arxiv.org/search/advanced?advanced=&terms-0-operator=AND&terms-0-term={}&terms-0-field=all&classification-computer_science=y&classification-physics_archives=all&date-filter_by=all_dates&date-year=&date-from_date=&date-to_date=&date-date_type=submitted_date&abstracts=show&size={}&order=-announced_date_first&start={}'
+        if _ENCHANT_AVAILABLE:
+            d = enchant.Dict('en_US')
+            if d.check(keyword):
+                query_temp = 'https://arxiv.org/search/advanced?advanced=&terms-0-operator=AND&terms-0-term={}&terms-0-field=all&classification-computer_science=y&classification-physics_archives=all&date-filter_by=all_dates&date-year=&date-from_date=&date-to_date=&date-date_type=submitted_date&abstracts=show&size={}&order=-announced_date_first&start={}'
+            else:
+                query_temp = 'https://arxiv.org/search/?searchtype=all&query={}&abstracts=show&size={}&order=-announced_date_first&start={}'
         else:
-            query_temp = 'https://arxiv.org/search/?searchtype=all&query={}&abstracts=show&size={}&order=-announced_date_first&start={}'
+            if args.exact:
+                query_temp = 'https://arxiv.org/search/advanced?advanced=&terms-0-operator=AND&terms-0-term={}&terms-0-field=all&classification-computer_science=y&classification-physics_archives=all&date-filter_by=all_dates&date-year=&date-from_date=&date-to_date=&date-date_type=submitted_date&abstracts=show&size={}&order=-announced_date_first&start={}'
+            else:
+                query_temp = 'https://arxiv.org/search/?searchtype=all&query={}&abstracts=show&size={}&order=-announced_date_first&start={}'
+
     keyword_q = keyword.replace(' ', '+')
     page = 0
     per_page = 200
@@ -263,28 +282,12 @@ def get_papers(keyword, num_results=5):
         page += 1
 
 
-def main():
-    if len(sys.argv) < 2:
-        raise ValueError('You must specify a keyword')
-    if len(sys.argv) > 3:
-        raise ValueError("Too many arguments")
+def main(args):
+    keyword = str(args.query)
+    num_results = int(args.count)
 
-    keyword = sys.argv[1]
+    if num_results <= 0:
+        raise ValueError('You must choose to show a positive number of results')
 
-    if len(sys.argv) == 3:
-        try:
-            num_results = int(sys.argv[2])
-        except:
-            print('The second argument must be an integer')
-            return
-        if num_results <= 0:
-            raise ValueError('You must choose to show a positive number of results')
+    get_papers(keyword, num_results, args)
 
-    else:
-        num_results = 5
-
-    get_papers(keyword, num_results)
-
-
-if __name__ == '__main__':
-    main()
