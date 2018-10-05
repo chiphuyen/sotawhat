@@ -15,7 +15,7 @@ $ pip3 install .
 $ pip3 install .[full]
 ```
 
-If you run the error that the package ``punkt`` doesn't exist, this script will automatically download it for you.
+If you run into the error that the package ``punkt`` doesn't exist, this script will automatically download it for you.
 
 On Windows, due to encoding errors, the script may cause issues when run on the command line. It is
 recommended to use `pip install win-unicode-console --upgrade` prior to launching the script. If you get
