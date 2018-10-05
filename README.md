@@ -17,6 +17,20 @@ $ python3
 >>> nltk.download('punkt')
 ```
 
+In MacOS, you can get the SSL error
+
+```
+[nltk_data] Error loading punkt: <urlopen error [SSL:
+[nltk_data]     CERTIFICATE_VERIFY_FAILED] certificate verify failed:
+[nltk_data]     unable to get local issuer certificate (_ssl.c:1045)>
+```
+
+this will be fixed by reinstalling certificates
+```shell
+$ /Applications/Python\ 3.x/Install\ Certificates.command
+```
+
+
 To query for a certain keyword, run:
 
 ```bash

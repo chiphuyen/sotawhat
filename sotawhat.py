@@ -1,19 +1,18 @@
-import datetime
 import re
 import sys
-import urllib
+import urllib.error
 import urllib.request
-
-from six.moves.html_parser import HTMLParser
-h = HTMLParser()
-
 import enchant
 from nltk.tokenize import word_tokenize
+from six.moves.html_parser import HTMLParser
+
+h = HTMLParser()
 
 AUTHOR_TAG = '<a href="/search/?searchtype=author'
 TITLE_TAG = '<p class="title is-5 mathjax">'
 ABSTRACT_TAG = '<span class="abstract-full has-text-grey-dark mathjax"'
 DATE_TAG = '<p class="is-size-7"><span class="has-text-black-bis has-text-weight-semibold">Submitted</span>'
+
 
 def get_authors(lines, i):
     authors = []
@@ -22,15 +21,15 @@ def get_authors(lines, i):
             break
         idx = lines[i].find('>')
         if lines[i].endswith(','):
-            authors.append(lines[i][idx + 1 : -5])
+            authors.append(lines[i][idx + 1: -5])
         else:
-            authors.append(lines[i][idx + 1 : -4])
+            authors.append(lines[i][idx + 1: -4])
         i += 1
     return authors, i
 
-def get_next_result(lines, start):
 
-    '''
+def get_next_result(lines, start):
+    """
     Extract paper from the xml file obtained from arxiv search.
     
     Each paper is a dict that contains:
@@ -39,11 +38,11 @@ def get_next_result(lines, start):
     + 'main_page': str
     + 'authors': []
     + 'abstract': str
-    '''
+    """
 
     result = {}
     idx = lines[start + 3][10:].find('"')
-    result['main_page'] = lines[start + 3][9:10+idx]
+    result['main_page'] = lines[start + 3][9:10 + idx]
     idx = lines[start + 4][23:].find('"')
     result['pdf'] = lines[start + 4][22: 23 + idx] + '.pdf'
 
@@ -57,7 +56,7 @@ def get_next_result(lines, start):
     title = title.replace('</span>', '')
     result['title'] = title
 
-    authors, start = get_authors(lines, start + 5) # orig: add 8
+    authors, start = get_authors(lines, start + 5)  # orig: add 8
 
     while not lines[start].strip().startswith(ABSTRACT_TAG):
         start += 1
@@ -72,22 +71,25 @@ def get_next_result(lines, start):
         start += 1
 
     idx = lines[start].find('</span> ')
-    end = lines[start][idx : ].find(';')
+    end = lines[start][idx:].find(';')
 
     result['date'] = lines[start][idx + 8: idx + end]
 
     return result, start
 
+
 def clean_empty_lines(lines):
-   cleaned = []
-   for line in lines:
-      line = line.strip()
-      if line:
-         cleaned.append(line)
-   return cleaned
+    cleaned = []
+    for line in lines:
+        line = line.strip()
+        if line:
+            cleaned.append(line)
+    return cleaned
+
 
 def is_float(token):
     return re.match("^\d+?\.\d+?$", token) is not None
+
 
 def is_citation_year(tokens, i):
     if len(tokens[i]) != 4:
@@ -96,9 +98,10 @@ def is_citation_year(tokens, i):
         return False
     if i == 0 or i == len(tokens) - 1:
         return False
-    if (tokens[i - 1] == ',' or tokens[i - 1] == '(')and tokens[i + 1] == ')':
+    if (tokens[i - 1] == ',' or tokens[i - 1] == '(') and tokens[i + 1] == ')':
         return True
     return False
+
 
 def is_list_numer(tokens, i, value):
     if value < 1 or value > 4:
@@ -116,9 +119,9 @@ def has_number(sent):
     for i, token in enumerate(tokens):
         if token.endswith('\\'):
             token = token[:-2]
-        if token.endswith('x'): # sometimes people write numbers as 1.7x
+        if token.endswith('x'):  # sometimes people write numbers as 1.7x
             token = token[:-1]
-        if token.startswith('x'): # sometimes people write numbers as x1.7
+        if token.startswith('x'):  # sometimes people write numbers as x1.7
             token = token[1:]
         if token.startswith('$') and token.endswith('$'):
             token = token[1:-1]
@@ -133,13 +136,14 @@ def has_number(sent):
 
     return False
 
+
 def contains_sota(sent):
     return 'state-of-the-art' in sent or 'state of the art' in sent or 'SOTA' in sent
+
 
 def extract_line(abstract, keyword, limit):
     lines = []
     numbered_lines = []
-    has_sota = False
     kw_mentioned = False
     abstract = abstract.replace("et. al", "et al.")
     sentences = abstract.split('. ')
@@ -150,7 +154,6 @@ def extract_line(abstract, keyword, limit):
             if has_number(sent):
                 numbered_lines.append(sent)
             elif contains_sota(sent):
-                has_sota = True
                 numbered_lines.append(sent)
             else:
                 kw_sentences.append(sent)
@@ -167,7 +170,8 @@ def extract_line(abstract, keyword, limit):
     if len(numbered_lines) > 0:
         return '. '.join(numbered_lines), True
     return '. '.join(lines[-2:]), False
-    
+
+
 def get_report(paper, keyword):
     if keyword in paper['abstract'].lower():
         title = h.unescape(paper['title'])
@@ -178,6 +182,7 @@ def get_report(paper, keyword):
             report = headline + extract + '\nLink: {}'.format(paper['main_page'])
             return report, has_number
     return '', False
+
 
 def txt2reports(txt, keyword, num_to_show):
     found = False
@@ -208,11 +213,11 @@ def txt2reports(txt, keyword, num_to_show):
             break
     return unshown, num_to_show, found
 
-def get_papers(keyword, num_results=5):
 
-    '''
+def get_papers(keyword, num_results=5):
+    """
     If keyword is an English word, then search in CS category only to avoid papers from other categories, resulted from the ambiguity
-    '''
+    """
 
     if keyword in set(['GAN', 'bpc']):
         query_temp = 'https://arxiv.org/search/advanced?advanced=&terms-0-operator=AND&terms-0-term={}&terms-0-field=all&classification-computer_science=y&classification-physics_archives=all&date-filter_by=all_dates&date-year=&date-from_date=&date-to_date=&date-date_type=submitted_date&abstracts=show&size={}&order=-announced_date_first&start={}'
@@ -257,6 +262,7 @@ def get_papers(keyword, num_results=5):
             all_unshown.extend(unshown)
         page += 1
 
+
 def main():
     if len(sys.argv) < 2:
         raise ValueError('You must specify a keyword')
@@ -273,11 +279,12 @@ def main():
             return
         if num_results <= 0:
             raise ValueError('You must choose to show a positive number of results')
-    
+
     else:
         num_results = 5
 
     get_papers(keyword, num_results)
+
 
 if __name__ == '__main__':
     main()
