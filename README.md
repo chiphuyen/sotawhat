@@ -5,7 +5,7 @@ This script runs using Python 3.
 First, install the required packages. This script only requires ``nltk`` and ``PyEnchant``.
 
 ```bash
-$ pip install -r requirements.txt
+$ pip3 install -r requirements.txt
 ```
 
 If you run the error that the package ``punkt`` doesn't exist, download it by going into your Python environment and running:
