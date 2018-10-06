@@ -43,6 +43,12 @@ For example:
 $ python3 sotawhat.py "perplexity" 10
 ```
 
+If you are using docker:
+
+```bash
+$ docker run --rm -it bulletninja/sotawhat "perplexity" 10
+```
+
 If you don't specify the number of results, by default, the script returns 5 results. Each result contains the title of the paper with author and published date, a summary of the abstract, and link to the paper.
 
 We've found that this script works well with keywords that are:
