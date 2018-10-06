@@ -2,11 +2,15 @@
 
 This script runs using Python 3.
 
-First, install the required packages. This script only requires ``nltk`` and ``PyEnchant``.
+## Requirements
+
+First, install the required packages. This script only requires ``nltk`` and ``pyspellchecker``.
 
 ```bash
 $ pip3 install -r requirements.txt
 ```
+
+## Known bugs and fix
 
 If you run the error that the package ``punkt`` doesn't exist, download it by going into your Python environment and running:
 
@@ -30,6 +34,7 @@ this will be fixed by reinstalling certificates
 $ /Applications/Python\ 3.x/Install\ Certificates.command
 ```
 
+## Usage
 
 To query for a certain keyword, run:
 

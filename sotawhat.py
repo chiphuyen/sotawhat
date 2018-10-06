@@ -2,7 +2,7 @@ import re
 import sys
 import urllib.error
 import urllib.request
-import enchant
+from spellchecker import SpellChecker
 from nltk.tokenize import word_tokenize
 from six.moves.html_parser import HTMLParser
 
@@ -31,7 +31,7 @@ def get_authors(lines, i):
 def get_next_result(lines, start):
     """
     Extract paper from the xml file obtained from arxiv search.
-    
+
     Each paper is a dict that contains:
     + 'title': str
     + 'pdf_link': str
@@ -224,8 +224,9 @@ def get_papers(keyword, num_results=5):
         keyword = keyword.lower()
     else:
         keyword = keyword.lower()
-        d = enchant.Dict('en_US')
-        if d.check(keyword):
+        words = keyword.split()
+        d = SpellChecker()
+        if not d.unknown(words):
             query_temp = 'https://arxiv.org/search/advanced?advanced=&terms-0-operator=AND&terms-0-term={}&terms-0-field=all&classification-computer_science=y&classification-physics_archives=all&date-filter_by=all_dates&date-year=&date-from_date=&date-to_date=&date-date_type=submitted_date&abstracts=show&size={}&order=-announced_date_first&start={}'
         else:
             query_temp = 'https://arxiv.org/search/?searchtype=all&query={}&abstracts=show&size={}&order=-announced_date_first&start={}'
@@ -266,21 +267,13 @@ def get_papers(keyword, num_results=5):
 def main():
     if len(sys.argv) < 2:
         raise ValueError('You must specify a keyword')
-    if len(sys.argv) > 3:
-        raise ValueError("Too many arguments")
 
-    keyword = sys.argv[1]
-
-    if len(sys.argv) == 3:
-        try:
-            num_results = int(sys.argv[2])
-        except:
-            print('The second argument must be an integer')
-            return
-        if num_results <= 0:
-            raise ValueError('You must choose to show a positive number of results')
-
-    else:
+    try:
+        num_results = int(sys.argv[-1])
+        assert num_results > 0, 'You must choose to show a positive number of results'
+        keyword = ' '.join([arg for arg in sys.argv[1:-1]])
+    except ValueError:
+        keyword = ' '.join([arg for arg in sys.argv[1:]])
         num_results = 5
 
     get_papers(keyword, num_results)
