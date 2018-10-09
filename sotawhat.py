@@ -5,6 +5,7 @@ import urllib.request
 import enchant
 from nltk.tokenize import word_tokenize
 from six.moves.html_parser import HTMLParser
+from termcolor import colored
 
 h = HTMLParser()
 
@@ -174,12 +175,25 @@ def extract_line(abstract, keyword, limit):
 
 def get_report(paper, keyword):
     if keyword in paper['abstract'].lower():
-        title = h.unescape(paper['title'])
-        headline = '{} ({} - {})\n'.format(title, paper['authors'][0], paper['date'])
-        abstract = h.unescape(paper['abstract'])
-        extract, has_number = extract_line(abstract, keyword, 280 - len(headline))
+
+        # Title of paper
+        title = '\n{}\n'.format(h.unescape(paper['title']))
+        title_colored = colored(title, 'yellow')
+        # Authors and date
+        subtitle = '{} on {}\n'.format(paper['authors'][0], paper['date'])
+        subtitle_colored = colored(subtitle, 'green')
+        # Abstract
+        abstract = '{}\n'.format(h.unescape(paper['abstract']))
+        extract, has_number = extract_line(abstract, keyword, 280 - len(title))
+        if extract[-1] == '\n':
+            extract = extract[:-1]
+        extract_colored = '{}'.format(colored(extract))
+        # Link to paper
+        link = '\nLink: {}'.format(paper['main_page'])
+        link_colored = colored(link, 'blue')
+
         if extract:
-            report = headline + extract + '\nLink: {}'.format(paper['main_page'])
+            report = title_colored + subtitle_colored + extract_colored + link_colored
             return report, has_number
     return '', False
 
@@ -205,12 +219,12 @@ def txt2reports(txt, keyword, num_to_show):
 
             if has_number:
                 print(report)
-                print('====================================================')
                 num_to_show -= 1
             elif report:
                 unshown.append(report)
         if line == '</ol>':
             break
+
     return unshown, num_to_show, found
 
 
