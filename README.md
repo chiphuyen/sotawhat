@@ -23,6 +23,12 @@ To query for a certain keyword, run:
 $ python3 sotawhat.py "[keyword]" [number of results]
 ```
 
+To query for a combination of keywords, run:
+
+```bash
+$ python3 sotawhat.py "[keyword] [keyword]" [number of results]
+```
+
 For example:
 
 ```bash
