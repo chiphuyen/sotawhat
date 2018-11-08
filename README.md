@@ -1,5 +1,7 @@
 # sotawhat
 
+To see the live demo of this project, you can try in this [link](https://sotawhat.herokuapp.com/#/)
+
 This script runs using Python 3.
 
 First, install the required packages. This script only requires ``nltk`` and ``PyEnchant``.
