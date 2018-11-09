@@ -2,11 +2,15 @@
 
 This script runs using Python 3.
 
-First, install the required packages. This script only requires ``nltk`` and ``PyEnchant``.
+## Requirements
+
+First, install the required packages. This script only requires ``nltk`` and ``pyspellchecker``.
 
 ```bash
 $ pip3 install -r requirements.txt
 ```
+
+## Known bugs and fix
 
 If you run the error that the package ``punkt`` doesn't exist, download it by going into your Python environment and running:
 
@@ -30,17 +34,24 @@ this will be fixed by reinstalling certificates
 $ /Applications/Python\ 3.x/Install\ Certificates.command
 ```
 
+## Usage
 
 To query for a certain keyword, run:
 
 ```bash
-$ python3 sotawhat.py "[keyword]" [number of results]
+$ python3 sotawhat.py [keyword] [number of results]
 ```
 
 For example:
 
 ```bash
-$ python3 sotawhat.py "perplexity" 10
+$ python3 sotawhat.py perplexity 10
+```
+
+or 
+
+```bash
+$ python3 sotawhat.py language model 10
 ```
 
 If you don't specify the number of results, by default, the script returns 5 results. Each result contains the title of the paper with author and published date, a summary of the abstract, and link to the paper.
@@ -48,6 +59,6 @@ If you don't specify the number of results, by default, the script returns 5 res
 We've found that this script works well with keywords that are:
 + a model (e.g. transformer, wavenet, ...)
 + a dataset (e.g. wikitext, imagenet, ...)
-+ a task (e.g. 'language model', 'machine translation', 'fuzzing', ...)
++ a task (e.g. language model, machine translation, fuzzing, ...)
 + a metric (e.g. BLEU, perplexity, ...)
 + random stuff

@@ -1,2 +1,2 @@
-PyEnchant
+pyspellchecker
 nltk
