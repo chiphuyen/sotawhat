@@ -1,17 +1,13 @@
-import re
 import os
+import re
+import sys
 import urllib.error
 import urllib.request
-from six.moves.html_parser import HTMLParser
 
 import nltk
 from nltk.tokenize import word_tokenize
-
-try:
-    import enchant
-    _ENCHANT_AVAILABLE = True
-except ImportError:
-    _ENCHANT_AVAILABLE = False
+from six.moves.html_parser import HTMLParser
+from spellchecker import SpellChecker
 
 try:
     nltk.data.find('tokenizers/punkt')
@@ -43,7 +39,7 @@ def get_authors(lines, i):
 def get_next_result(lines, start):
     """
     Extract paper from the xml file obtained from arxiv search.
-    
+
     Each paper is a dict that contains:
     + 'title': str
     + 'pdf_link': str
@@ -141,7 +137,7 @@ def has_number(sent):
             return True
         try:
             value = int(token)
-        except Exception:
+        except:
             continue
         if (not is_citation_year(tokens, i)) and (not is_list_numer(tokens, i, value)):
             return True
@@ -187,7 +183,7 @@ def extract_line(abstract, keyword, limit):
 def get_report(paper, keyword):
     if keyword in paper['abstract'].lower():
         title = h.unescape(paper['title'])
-        headline = '{} ({} - {})\n'.format(title, h.unescape(paper['authors'][0]), paper['date'])
+        headline = '{} ({} - {})\n'.format(title, paper['authors'][0], paper['date'])
         abstract = h.unescape(paper['abstract'])
         extract, has_number = extract_line(abstract, keyword, 280 - len(headline))
         if extract:
@@ -226,28 +222,22 @@ def txt2reports(txt, keyword, num_to_show):
     return unshown, num_to_show, found
 
 
-def get_papers(keyword, num_results=5, args=None):
+def get_papers(keyword, num_results=5):
     """
     If keyword is an English word, then search in CS category only to avoid papers from other categories, resulted from the ambiguity
     """
 
-    if keyword in {'GAN', 'bpc'}:
+    if keyword in set(['GAN', 'bpc']):
         query_temp = 'https://arxiv.org/search/advanced?advanced=&terms-0-operator=AND&terms-0-term={}&terms-0-field=all&classification-computer_science=y&classification-physics_archives=all&date-filter_by=all_dates&date-year=&date-from_date=&date-to_date=&date-date_type=submitted_date&abstracts=show&size={}&order=-announced_date_first&start={}'
         keyword = keyword.lower()
     else:
         keyword = keyword.lower()
-        if _ENCHANT_AVAILABLE:
-            d = enchant.Dict('en_US')
-            if d.check(keyword):
-                query_temp = 'https://arxiv.org/search/advanced?advanced=&terms-0-operator=AND&terms-0-term={}&terms-0-field=all&classification-computer_science=y&classification-physics_archives=all&date-filter_by=all_dates&date-year=&date-from_date=&date-to_date=&date-date_type=submitted_date&abstracts=show&size={}&order=-announced_date_first&start={}'
-            else:
-                query_temp = 'https://arxiv.org/search/?searchtype=all&query={}&abstracts=show&size={}&order=-announced_date_first&start={}'
+        words = keyword.split()
+        d = SpellChecker()
+        if not d.unknown(words):
+            query_temp = 'https://arxiv.org/search/advanced?advanced=&terms-0-operator=AND&terms-0-term={}&terms-0-field=all&classification-computer_science=y&classification-physics_archives=all&date-filter_by=all_dates&date-year=&date-from_date=&date-to_date=&date-date_type=submitted_date&abstracts=show&size={}&order=-announced_date_first&start={}'
         else:
-            if args.exact:
-                query_temp = 'https://arxiv.org/search/advanced?advanced=&terms-0-operator=AND&terms-0-term={}&terms-0-field=all&classification-computer_science=y&classification-physics_archives=all&date-filter_by=all_dates&date-year=&date-from_date=&date-to_date=&date-date_type=submitted_date&abstracts=show&size={}&order=-announced_date_first&start={}'
-            else:
-                query_temp = 'https://arxiv.org/search/?searchtype=all&query={}&abstracts=show&size={}&order=-announced_date_first&start={}'
-
+            query_temp = 'https://arxiv.org/search/?searchtype=all&query={}&abstracts=show&size={}&order=-announced_date_first&start={}'
     keyword_q = keyword.replace(' ', '+')
     page = 0
     per_page = 200
@@ -282,12 +272,31 @@ def get_papers(keyword, num_results=5, args=None):
         page += 1
 
 
-def main(args):
-    keyword = str(args.query)
-    num_results = int(args.count)
+def main():
+    if 'nt' in os.name:
+        try:
+            import win_unicode_console
+            win_unicode_console.enable()
+        except ImportError:
+            warnings.warn('On Windows, encoding errors may arise when displaying the data.\n'
+                          'If such errors occur, please install `win_unicode_consolde` via \n'
+                          'the command `pip install win-unicode-console`.')
 
-    if num_results <= 0:
-        raise ValueError('You must choose to show a positive number of results')
+    if len(sys.argv) < 2:
+        raise ValueError('You must specify a keyword')
 
-    get_papers(keyword, num_results, args)
+    try:
+        num_results = int(sys.argv[-1])
+        assert num_results > 0, 'You must choose to show a positive number of results'
+        keyword = ' '.join(sys.argv[1:-1])
+    
+    except ValueError:
+        keyword = ' '.join(sys.argv[1:])
+        num_results = 5
 
+
+    get_papers(keyword, num_results)
+
+
+if __name__ == '__main__':
+    main()
