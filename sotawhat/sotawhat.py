@@ -289,7 +289,7 @@ def main():
         num_results = int(sys.argv[-1])
         assert num_results > 0, 'You must choose to show a positive number of results'
         keyword = ' '.join(sys.argv[1:-1])
-    
+
     except ValueError:
         keyword = ' '.join(sys.argv[1:])
         num_results = 5

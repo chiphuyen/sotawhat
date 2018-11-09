@@ -1,13 +1,14 @@
 # sotawhat
 
-This script runs using Python 3. It requires ``nltk``, ``six``, and ``pyspellchecker``. To install it as a Python package, follow the steps:
+This script runs using Python 3. It requires ``nltk``, ``six``, and ``pyspellchecker``. To install it as a Python package, follow the following steps:
+
 
 Step 1: clone this repo, and go inside that repo:
 ```bash
 $ git clone [HTTPS or SSH linnk to this repo]
 $ cd sotawhat
 ```
-Step 2: install using pip3
+Step 2: install using pip
 
 ```bash
 $ pip3 install .
