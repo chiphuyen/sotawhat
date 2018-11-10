@@ -1,6 +1,6 @@
 # sotawhat
 
-To see the live demo of this project, you can try in this [link](https://sotawhat.herokuapp.com/#/)
+You can use sotawhat through a web interface [here](https://sotawhat.herokuapp.com/#/). Thanks hmchuong!
 
 This script runs using Python 3. It requires ``nltk``, ``six``, and ``pyspellchecker``. To install it as a Python package, follow the following steps:
 
