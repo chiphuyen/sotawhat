@@ -1,5 +1,7 @@
 # sotawhat
 
+Read more about SOTAWHAT [here](https://huyenchip.com/2018/10/04/sotawhat.html).
+
 You can use sotawhat through a web interface [here](https://sotawhat.herokuapp.com/#/). Thanks hmchuong!
 
 This script runs using Python 3. It requires ``nltk``, ``six``, and ``pyspellchecker``. To install it as a Python package, follow the following steps:
