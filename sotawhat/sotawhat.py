@@ -4,6 +4,8 @@ import sys
 import urllib.error
 import urllib.request
 import warnings
+import requests  # python3
+import time
 
 import nltk
 from nltk.tokenize import word_tokenize
@@ -50,10 +52,17 @@ def get_next_result(lines, start):
     """
 
     result = {}
-    idx = lines[start + 3][10:].find('"')
-    result['main_page'] = lines[start + 3][9:10 + idx]
-    idx = lines[start + 4][23:].find('"')
-    result['pdf'] = lines[start + 4][22: 23 + idx] + '.pdf'
+    # Fix arxiv url extraction: https://github.com/chiphuyen/sotawhat/pull/24/commits/87da3bf782cf72a698abcc66b9f137c7b6eeac0d
+    abstract_line = 2
+    abstract_begin_offset = 47
+
+    pdf_line = 3
+    pdf_begin_offset = 22
+
+    idx = lines[start + abstract_line][abstract_begin_offset:].find('"')
+    result['main_page'] = lines[start + abstract_line][abstract_begin_offset:abstract_begin_offset + idx]
+    idx = lines[start + pdf_line][pdf_begin_offset:].find('"')
+    result['pdf'] = lines[start + pdf_line][pdf_begin_offset: pdf_begin_offset + idx] + '.pdf'
 
     start += 4
 
@@ -195,7 +204,7 @@ def get_report(paper, keyword):
 
 def txt2reports(txt, keyword, num_to_show):
     found = False
-    txt = ''.join(chr(c) for c in txt)
+    # txt = ''.join(chr(c) for c in txt)  # ignore as use requests rather than http.client
     lines = txt.split('\n')
     lines = clean_empty_lines(lines)
     unshown = []
@@ -248,14 +257,19 @@ def get_papers(keyword, num_results=5):
     while num_to_show > 0:
         query = query_temp.format(keyword_q, str(per_page), str(per_page * page))
 
-        req = urllib.request.Request(query)
-        try:
-            response = urllib.request.urlopen(req)
-        except urllib.error.HTTPError as e:
-            print('Error {}: problem accessing the server'.format(e.code))
-            return
+        # https://stackoverflow.com/questions/14442222/how-to-handle-incompleteread-in-python
+        # use requests and avoid error: "http.client.IncompleteRead: IncompleteRead"
+        txt = ""
+        for i in range(3):
+            try:
+                response = requests.get(query)
+                txt = response.text
+                if txt:
+                    break
+            except Exception as e:
+                print('Got error when requesting URL "' + query + '": ' + str(e) + '\n')
+                time.sleep(1)
 
-        txt = response.read()
         unshown, num_to_show, found = txt2reports(txt, keyword, num_to_show)
         if not found and not all_unshown and num_to_show == num_results:
             print('Sorry, we were unable to find any abstract with the word {}'.format(keyword))
