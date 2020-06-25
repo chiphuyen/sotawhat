@@ -1,5 +1,7 @@
 # sotawhat
 
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 Read more about SOTAWHAT [here](https://huyenchip.com/2018/10/04/sotawhat.html).
 
 You can use sotawhat through a web interface [here](https://sotawhat.herokuapp.com/#/). Thanks hmchuong!
