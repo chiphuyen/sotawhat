@@ -50,10 +50,18 @@ def get_next_result(lines, start):
     """
 
     result = {}
-    idx = lines[start + 3][10:].find('"')
-    result['main_page'] = lines[start + 3][9:10 + idx]
-    idx = lines[start + 4][23:].find('"')
-    result['pdf'] = lines[start + 4][22: 23 + idx] + '.pdf'
+
+    # these can change with arxiv updates
+    abstract_line = 2
+    abstract_begin_offset = 47
+
+    pdf_line = 3
+    pdf_begin_offset = 22
+
+    idx = lines[start + abstract_line][abstract_begin_offset:].find('"')
+    result['main_page'] = lines[start + abstract_line][abstract_begin_offset:abstract_begin_offset + idx]
+    idx = lines[start + pdf_line][pdf_begin_offset:].find('"')
+    result['pdf'] = lines[start + pdf_line][pdf_begin_offset: pdf_begin_offset + idx] + '.pdf'
 
     start += 4
 
