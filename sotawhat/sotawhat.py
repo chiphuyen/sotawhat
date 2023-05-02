@@ -7,15 +7,15 @@ import warnings
 
 import nltk
 from nltk.tokenize import word_tokenize
-from six.moves.html_parser import HTMLParser
 from spellchecker import SpellChecker
+from html import unescape
 
 try:
     nltk.data.find('tokenizers/punkt')
 except LookupError:
     nltk.download('punkt')
 
-h = HTMLParser()
+h = unescape
 
 AUTHOR_TAG = '<a href="/search/?searchtype=author'
 TITLE_TAG = '<p class="title is-5 mathjax">'
@@ -183,9 +183,9 @@ def extract_line(abstract, keyword, limit):
 
 def get_report(paper, keyword):
     if keyword in paper['abstract'].lower():
-        title = h.unescape(paper['title'])
+        title = h(paper['title'])
         headline = '{} ({} - {})\n'.format(title, paper['authors'][0], paper['date'])
-        abstract = h.unescape(paper['abstract'])
+        abstract = h(paper['abstract'])
         extract, has_number = extract_line(abstract, keyword, 280 - len(headline))
         if extract:
             report = headline + extract + '\nLink: {}'.format(paper['main_page'])
