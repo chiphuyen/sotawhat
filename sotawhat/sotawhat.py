@@ -48,10 +48,14 @@ def get_next_result(lines, start):
     + 'authors': []
     + 'abstract': str
     """
+    def extract_first_arxiv_url(html_string):
+        pattern = r'https://arxiv\.org/[^"]+' # Regular expression to match URLs from the arxiv.org domain
+        match = re.search(pattern, html_string)
+        return match.group(0) if match else None
 
     result = {}
     idx = lines[start + 3][10:].find('"')
-    result['main_page'] = lines[start + 3][9:10 + idx]
+    result['main_page'] = extract_first_arxiv_url(lines[start + 3])
     idx = lines[start + 4][23:].find('"')
     result['pdf'] = lines[start + 4][22: 23 + idx] + '.pdf'
 
