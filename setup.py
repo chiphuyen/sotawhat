@@ -10,7 +10,7 @@ setup(
                          'abstracts and extract summaries from them. '),
     url='https://huyenchip.com/2018/10/04/sotawhat.html',
     license="",
-    install_requires=['six', 'nltk', 'pyspellchecker'],
+    install_requires=['six', 'nltk', 'pyspellchecker', 'PyPDF2', 'openai'],
     entry_points={
         'console_scripts': ['sotawhat=sotawhat.sotawhat:main'],
     }
