@@ -300,14 +300,14 @@ def get_paper_content(pdf_url):
 
     return all_text
 
-def summarise_paper(paper_content, model="gpt-3.5-turbo-16k", role="user"):
+def summarise_paper(paper_content, model="gpt-3.5-turbo-0125", role="user"):
     """
     Summarises the paper content using the OpenAI GPT-3.5 16k model
     """
     if len(paper_content) > 45000:
         warnings.warn(f'Paper content is too long - {len(paper_content)} characters. Using only first 45000 characters.')
-        paper_content = paper_content[:45000]
-    response = openai.ChatCompletion.create(
+        paper_content = paper_content[:45000]    
+    response = openai_client.chat.completions.create(
     model=model,
     messages=[
         {
@@ -318,17 +318,19 @@ def summarise_paper(paper_content, model="gpt-3.5-turbo-16k", role="user"):
          "content": "Summarise paper text in 150 words: " + paper_content
          }])
 
-    return response["choices"][0]['message']['content']
+    return response.choices[0].message.content
 
-def key_findings(paper_content, model="gpt-3.5-turbo-16k", role="user"):
+def key_findings(paper_content, model="gpt-3.5-turbo-0125", role="user"):
     """
     Retrieves Key Findings from a paper using OpenAI GPT-3.5 16k model
     """
     if len(paper_content) > 45000:
         warnings.warn(f'Paper content is too long - {len(paper_content)} characters. Using only first 45000 characters.')
         paper_content = paper_content[:45000]
-        
-    response = openai.ChatCompletion.create(
+
+    openai_client = openai.OpenAI()
+    
+    response = openai_client.chat.completions.create(
     model=model,
     messages=[
         {
@@ -339,7 +341,7 @@ def key_findings(paper_content, model="gpt-3.5-turbo-16k", role="user"):
          "content": "List down the key findings of the paper: " + paper_content
          }])
 
-    return response["choices"][0]['message']['content']
+    return response.choices[0].message.content
 
 
 def main():
@@ -355,9 +357,10 @@ def main():
     if len(sys.argv) > 1 and sys.argv[1] == 'summarize':
         
         # Check for OpenAI API key only when 'summarize' is the argument
-        os.system(f"(export OPENAI_API_KEY={getpass('Please enter your OpenAI API Key: ')}; bash)")
-
-        openai.api_key = os.environ['OPENAI_API_KEY']
+        if 'OPENAI_API_KEY' not in os.environ:
+            openai_api_key = getpass('Please enter your OpenAI API Key: ')
+        
+        os.environ['OPENAI_API_KEY'] = openai_api_key
 
         if len(sys.argv) < 3:
             raise ValueError('You must specify a paper url')
@@ -370,9 +373,10 @@ def main():
     if len(sys.argv) > 1 and sys.argv[1] == 'keyfindings':
     
         # Check for OpenAI API key only when 'keyfindings' is the argument
-        os.system(f"(export OPENAI_API_KEY={getpass('Please enter your OpenAI API Key: ')}; bash)")
-
-        openai.api_key = os.environ['OPENAI_API_KEY']
+        if 'OPENAI_API_KEY' not in os.environ:
+            openai_api_key = getpass('Please enter your OpenAI API Key: ')
+        
+        os.environ['OPENAI_API_KEY'] = openai_api_key
 
         if len(sys.argv) < 3:
             raise ValueError('You must specify a paper url')
