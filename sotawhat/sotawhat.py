@@ -44,7 +44,7 @@ def get_authors(lines, i):
 
 # Source: https://github.com/chiphuyen/sotawhat/pull/33/files
 def extract_first_arxiv_url(html_string):
-    pattern = r'https://arxiv\.org/[^"]+' # Regular expression to match URLs from the arxiv.org domain
+    pattern = r'https://[^"]+arxiv\.org/[^"]+' # Regular expression to match URLs from the arxiv.org domain
     match = re.search(pattern, html_string)
     return match.group(0) if match else None
 
@@ -355,10 +355,8 @@ def main():
     if len(sys.argv) > 1 and sys.argv[1] == 'summarize':
         
         # Check for OpenAI API key only when 'summarize' is the argument
-        if 'OPENAI_API_KEY' not in os.environ:
-            openai_api_key = getpass('Please enter your OpenAI API Key: ')
-            os.environ['OPENAI_API_KEY'] = openai_api_key
-            
+        os.system(f"(export OPENAI_API_KEY={getpass('Please enter your OpenAI API Key: ')}; bash)")
+
         openai.api_key = os.environ['OPENAI_API_KEY']
 
         if len(sys.argv) < 3:
@@ -372,10 +370,8 @@ def main():
     if len(sys.argv) > 1 and sys.argv[1] == 'keyfindings':
     
         # Check for OpenAI API key only when 'keyfindings' is the argument
-        if 'OPENAI_API_KEY' not in os.environ:
-            openai_api_key = getpass('Please enter your OpenAI API Key: ')
-            os.environ['OPENAI_API_KEY'] = openai_api_key
-            
+        os.system(f"(export OPENAI_API_KEY={getpass('Please enter your OpenAI API Key: ')}; bash)")
+
         openai.api_key = os.environ['OPENAI_API_KEY']
 
         if len(sys.argv) < 3:
