@@ -1,3 +1,5 @@
 nltk
 six
-pyspellchecker
+pyspellchecker 
+PyPDF2
+openai
